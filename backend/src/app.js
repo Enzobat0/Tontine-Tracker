@@ -5,6 +5,8 @@ const usersRouter = require('./routes/users');
 const tontinesRouter = require('./routes/tontines');
 
 const app = express();
+const authRouter = require('./routes/auth');
+
 
 app.use(cors());
 app.use(express.json());
@@ -15,6 +17,7 @@ app.get('/', (req, res) => res.json({ status: 'ok', app: 'TontineTracker Backend
 // API routers
 app.use('/api/users', usersRouter);
 app.use('/api/tontines', tontinesRouter);
+app.use('/api/auth', authRouter);
 
 // simple error handler
 app.use((err, req, res, next) => {
