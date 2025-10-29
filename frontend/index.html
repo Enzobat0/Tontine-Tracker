@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tontine Tracker — Frontend</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="./styles.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="row mb-4">
+      <div class="col">
+        <h1 class="h3">Tontine Tracker — Demo Frontend</h1>
+        <p class="text-muted">Simple frontend (Bootstrap + vanilla JS). Backend must run at <code>http://localhost:4000</code>.</p>
+      </div>
+      <div class="col-auto">
+        <div id="userBadge" class="d-none text-end">
+          <div><strong id="userName"></strong></div>
+          <button id="logoutBtn" class="btn btn-sm btn-outline-secondary mt-1">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4">
+        <!-- Auth Card -->
+        <div class="card mb-3" id="authCard">
+          <div class="card-body">
+            <h5 class="card-title">Sign In</h5>
+            <form id="loginForm">
+              <div class="mb-2">
+                <label class="form-label">Email</label>
+                <input type="email" id="loginEmail" class="form-control" required />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Password</label>
+                <input type="password" id="loginPassword" class="form-control" required />
+              </div>
+              <button class="btn btn-primary" type="submit">Login</button>
+            </form>
+            <hr />
+            <h6 class="card-subtitle mb-2 text-muted">Or register</h6>
+            <form id="registerForm">
+              <div class="mb-2">
+                <label class="form-label">Name</label>
+                <input type="text" id="regName" class="form-control" required />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Email</label>
+                <input type="email" id="regEmail" class="form-control" required />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Password</label>
+                <input type="password" id="regPassword" class="form-control" required />
+              </div>
+              <button class="btn btn-outline-primary" type="submit">Register</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Create Tontine Card -->
+        <div class="card mb-3 hidden" id="createTontineCard">
+          <div class="card-body">
+            <h5 class="card-title">Create Tontine</h5>
+            <form id="createTontineForm">
+              <div class="mb-2">
+                <label class="form-label">Name</label>
+                <input class="form-control" id="tName" required />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Description (optional)</label>
+                <input class="form-control" id="tDescription" />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Contribution Amount</label>
+                <input type="number" class="form-control" id="tAmount" required />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Rotation Length (optional)</label>
+                <input type="number" class="form-control" id="tRotation" />
+              </div>
+              <button class="btn btn-success" type="submit">Create</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Add Member Card -->
+        <div class="card mb-3 hidden" id="addMemberCard">
+          <div class="card-body">
+            <h5 class="card-title">Add Member</h5>
+            <form id="addMemberForm">
+              <div class="mb-2">
+                <label class="form-label">Tontine</label>
+                <select id="selectTontineForMember" class="form-select"></select>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Member Name</label>
+                <input class="form-control" id="memberName" required />
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Contact (optional)</label>
+                <input class="form-control" id="memberContact" />
+              </div>
+              <button class="btn btn-primary" type="submit">Add Member</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-md-8">
+        <!-- Tontine List & Actions -->
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">Tontines</h5>
+            <div id="tontineList" class="list-group"></div>
+          </div>
+        </div>
+
+        <!-- Ledger / Details -->
+        <div class="card mb-3 hidden" id="tontineDetailsCard">
+          <div class="card-body">
+            <h5 class="card-title">Tontine Details</h5>
+            <div id="tontineDetails"></div>
+
+            <hr />
+            <h6>Record Contribution</h6>
+            <form id="contributionForm" class="row g-2 align-items-end">
+              <div class="col-md-5">
+                <label class="form-label">Member</label>
+                <select id="selectMemberForContribution" class="form-select"></select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Amount (optional)</label>
+                <input type="number" id="contribAmount" class="form-control" />
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-outline-success" id="btnRecordContribution">Record</button>
+              </div>
+            </form>
+
+            <hr />
+            <h6>Record Payout</h6>
+            <form id="payoutForm" class="row g-2 align-items-end">
+              <div class="col-md-6">
+                <label class="form-label">Member to Receive</label>
+                <select id="selectMemberForPayout" class="form-select"></select>
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-outline-primary" id="btnRecordPayout">Payout</button>
+              </div>
+            </form>
+
+            <hr />
+            <h6>Ledger</h6>
+            <pre id="ledgerPre" class="border rounded p-3 bg-light"></pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer class="mt-4 text-muted small">Backend must be running and CORS enabled. This is a demo UI for formative features.</footer>
+  </div>
+
+  <script src="./app.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
