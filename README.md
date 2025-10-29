@@ -1,9 +1,24 @@
 # Tontine Tracker — Digital Group Savings Platform
 **Description**
 
-Tontine Tracker is a lightweight web application that helps small community savings groups (tontines) manage their collective funds digitally. The app provides an easy way for a tontine leader (group administrator) to create and manage savings groups, track member contributions, and record payouts — reducing confusion and improving transparency.
+Tontine Tracker is a lightweight web application designed to help small community savings groups (commonly known as tontines, ibimina, or stokvels in various African contexts) manage their collective funds digitally.
 
-The goal of this project is to simplify how local savings groups track their contributions and payments, moving away from manual notebooks or spreadsheets toward a simple, accessible digital solution.
+Across Africa, millions of people rely on informal group savings systems, pooling money monthly or weekly and rotating who receives the payout. However, these groups often face issues like:
+
+- Manual tracking errors in notebooks or WhatsApp messages
+
+- Lack of transparency in contribution and payout records
+
+- Disputes due to lost data or unclear tracking
+
+Tontine Tracker provides an easy, digital way for group leaders to record contributions, track payouts, and visualize the group’s progress, even with limited technical knowledge or internet access.
+
+### Problem Statement & African Context
+Informal savings groups are an essential part of local economies across Africa, especially for unbanked or underbanked individuals.
+Despite their importance, most tontines still depend on paper records or verbal tracking, leading to confusion, data loss, and mistrust among members.
+
+Tontine Tracker directly addresses this challenge by digitizing group saving management while remaining simple enough for community use.
+It focuses on accessibility, transparency, and accountability; crucial values for trust-driven savings groups.
 
 **Key Objectives**
 
@@ -43,6 +58,63 @@ The goal of this project is to simplify how local savings groups track their con
 | **Styling** | Bootstrap (for responsiveness and design consistency) |
 | **Version Control** | Git & GitHub |
 | **DevOps Tools (later phases)** | Docker, GitHub Actions (CI/CD), Deployment via Render/Netlify |
+
+## Setup Instructions
+
+#### 1. Clone the Repository
+```
+git clone https://github.com/<your-username>/<repo-name>.git
+cd <repo-name>
+```
+
+#### 2. Backend Setup (Node.js + Express)
+Navigate to the backend folder:
+```
+cd backend
+```
+Install dependencies:
+```
+npm install
+```
+Create a .env file:
+Required variables in .env:
+```
+PORT=4000
+JWT_SECRET=<your_secret_key>
+JWT_EXPIRES_IN=1d
+```
+Make sure to replace <your_secret_key> with a secure random string
+
+Start the backend server in development mode:
+```
+npm run dev
+```
+#### 3. Frontend Setup (HTML/CSS/JS)
+Navigate to the frontend folder:
+
+```
+cd ../frontend
+```
+Serve the frontend locally.Use Node serve:
+```
+npx serve .
+```
+Open your browser at the URL provided by your static server.
+
+#### 4. Notes & Tips
+
+Database: Uses local JSON file (db.json) for now, no external DB setup required.
+
+CORS: Backend already configured for frontend requests.
+
+Troubleshooting:
+
+- If server doesn’t start → check .env variables.
+
+- If JWT issues occur → clear browser localStorage.
+
+- If frontend doesn’t load → confirm correct port for static server.
+
 
 ##  Team Members
 | Name | Role |
