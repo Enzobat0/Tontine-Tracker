@@ -1,5 +1,5 @@
 # ------------------------------
-# Stage 1: Use a lightweight Node.js base image
+# Stage 1: Base image
 # ------------------------------
 FROM node:20-slim
 
@@ -9,34 +9,32 @@ FROM node:20-slim
 WORKDIR /app
 
 # ------------------------------
-# Copy only package files first to leverage Docker cache
+# Copy only package files to leverage caching
 # ------------------------------
-COPY package*.json ./
+COPY backend/package*.json ./
 
 # ------------------------------
 # Install dependencies
-# Using npm ci ensures a clean, reproducible install
 # ------------------------------
 RUN npm ci --only=production
 
 # ------------------------------
-# Copy the rest of the application files
+# Copy the backend source code into the container
 # ------------------------------
-COPY . .
+COPY backend ./backend
 
 # ------------------------------
-# Create a non-root user for better container security
+# Create a non-root user for security
 # ------------------------------
 RUN useradd -m appuser
 USER appuser
 
 # ------------------------------
-# Expose the application port
-# (Match this with your Express app’s listening port)
+# Expose the app port
 # ------------------------------
 EXPOSE 3000
 
 # ------------------------------
 # Start the application
 # ------------------------------
-CMD ["node", "server.js"]
+CMD ["node", "backend/src/app.js"]
