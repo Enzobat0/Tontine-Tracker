@@ -24,3 +24,5 @@ logs
 # Docker files themselves
 Dockerfile
 docker-compose.yml
+
+frontend/
