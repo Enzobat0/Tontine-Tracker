@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .                   # backend Dockerfile at root
+    container_name: backend
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/tontine
+    depends_on:
+      - mongo
+    volumes:
+      - backend-data:/app/db.json
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend          # frontend Dockerfile in frontend/
+    container_name: frontend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
+  backend-data:
