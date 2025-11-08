@@ -7,8 +7,6 @@ const authMiddleware = require('../middleware/auth');
 router.get('/', tontineController.listTontines);
 // Public: get a single tontine
 router.get('/:id', tontineController.getTontine);
-// Public: view ledger
-router.get('/:id/ledger', tontineController.getLedger);
 
 // Protected: create tontine (owner = req.user.id)
 router.post('/', authMiddleware, tontineController.createTontine);

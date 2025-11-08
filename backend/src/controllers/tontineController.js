@@ -1,26 +1,15 @@
-const { db, createId } = require('../db');
+const Tontine = require('../models/Tontines.js');
 
-/**
- * Helper: find tontine by id
- */
-async function findTontine(id) {
-  await db.read();
-  return db.data.tontines.find(t => t.id === id);
-}
-
-/**
- * List all tontines
- */
 async function listTontines(req, res, next) {
   try {
-    await db.read();
-    const items = db.data.tontines.map(t => ({
-      id: t.id,
+    const tontines = await Tontine.find();
+    const items = tontines.map(t => ({
+      id: t._id,
       name: t.name,
       description: t.description,
       contributionAmount: t.contributionAmount,
       memberCount: t.members.length,
-      createdAt: t.createdAt
+      createdAt: t.createdAt,
     }));
     res.json(items);
   } catch (err) {
@@ -28,13 +17,9 @@ async function listTontines(req, res, next) {
   }
 }
 
-/**
- * Get full tontine by id
- */
 async function getTontine(req, res, next) {
   try {
-    const { id } = req.params;
-    const tontine = await findTontine(id);
+    const tontine = await Tontine.findById(req.params.id);
     if (!tontine) return res.status(404).json({ error: 'Tontine not found' });
     res.json(tontine);
   } catch (err) {
@@ -42,202 +27,95 @@ async function getTontine(req, res, next) {
   }
 }
 
-/**
- * Create a tontine
- * Protected: owner comes from req.user
- */
 async function createTontine(req, res, next) {
   try {
     const { name, description, contributionAmount, rotationLength } = req.body;
-    if (!name || !contributionAmount) return res.status(400).json({ error: 'name and contributionAmount required' });
+    if (!name || !contributionAmount)
+      return res.status(400).json({ error: 'name and contributionAmount required' });
 
-    await db.read();
-    const tontine = {
-      id: createId(),
+    const tontine = await Tontine.create({
       name,
-      description: description || null,
-      ownerId: req.user && req.user.id ? req.user.id : null,
-      contributionAmount: Number(contributionAmount),
-      rotationLength: rotationLength || null,
-      members: [],
-      contributions: [],
-      payouts: [],
-      createdAt: new Date().toISOString(),
-      currentRound: 1
-    };
+      description,
+      ownerId: req.user?.id || null,
+      contributionAmount,
+      rotationLength,
+    });
 
-    db.data.tontines.push(tontine);
-    await db.write();
     res.status(201).json(tontine);
   } catch (err) {
     next(err);
   }
 }
 
-/**
- * Add a member to a tontine
- * Only owner can add members
- */
 async function addMember(req, res, next) {
   try {
-    const { id } = req.params;
-    const { name, contact } = req.body;
-    if (!name) return res.status(400).json({ error: 'member name required' });
-
-    await db.read();
-    const tontine = db.data.tontines.find(t => t.id === id);
+    const tontine = await Tontine.findById(req.params.id);
     if (!tontine) return res.status(404).json({ error: 'Tontine not found' });
+    if (tontine.ownerId.toString() !== req.user.id)
+      return res.status(403).json({ error: 'Forbidden: only owner can add members' });
 
-    // check ownership
-    if (tontine.ownerId !== req.user.id) return res.status(403).json({ error: 'Forbidden: only owner can add members' });
+    tontine.members.push({
+      name: req.body.name,
+      contact: req.body.contact || null,
+    });
+    await tontine.save();
 
-    const member = { id: createId(), name, contact: contact || null, createdAt: new Date().toISOString() };
-    tontine.members.push(member);
-
-    await db.write();
-    res.status(201).json(member);
+    res.status(201).json(tontine.members[tontine.members.length - 1]);
   } catch (err) {
     next(err);
   }
 }
 
-/**
- * Record a contribution
- * Body: { memberId, amount (optional, default to contributionAmount), date (optional) }
- */
 async function recordContribution(req, res, next) {
   try {
     const { id } = req.params;
     const { memberId, amount, date } = req.body;
 
-    if (!memberId) return res.status(400).json({ error: 'memberId required' });
-
-    await db.read();
-    const tontine = db.data.tontines.find(t => t.id === id);
+    const tontine = await Tontine.findById(id);
     if (!tontine) return res.status(404).json({ error: 'Tontine not found' });
 
-    if (tontine.ownerId !== req.user.id) return res.status(403).json({ error: 'Forbidden: only owner can record contributions' });
+    if (tontine.ownerId.toString() !== req.user.id)
+      return res.status(403).json({ error: 'Forbidden' });
 
-    const member = tontine.members.find(m => m.id === memberId);
-    if (!member) return res.status(404).json({ error: 'Member not found in this tontine' });
+    const member = tontine.members.id(memberId);
+    if (!member) return res.status(404).json({ error: 'Member not found' });
 
-    const contribution = {
-      id: createId(),
+    tontine.contributions.push({
       memberId,
-      amount: amount ? Number(amount) : Number(tontine.contributionAmount),
-      date: date || new Date().toISOString(),
-      round: tontine.currentRound
-    };
+      amount: amount || tontine.contributionAmount,
+      date,
+      round: tontine.currentRound,
+    });
+    await tontine.save();
 
-    tontine.contributions.push(contribution);
-    await db.write();
-    res.status(201).json(contribution);
+    res.status(201).json(tontine.contributions[tontine.contributions.length - 1]);
   } catch (err) {
     next(err);
   }
 }
 
-/**
- * Record a payout for current round
- * Body: { memberId }
- * This will:
- *  - create a payout record with amount = contributionAmount * members.length (pooled amount)
- *  - increment currentRound
- */
 async function recordPayout(req, res, next) {
   try {
     const { id } = req.params;
     const { memberId } = req.body;
 
-    if (!memberId) return res.status(400).json({ error: 'memberId required' });
-
-    await db.read();
-    const tontine = db.data.tontines.find(t => t.id === id);
+    const tontine = await Tontine.findById(id);
     if (!tontine) return res.status(404).json({ error: 'Tontine not found' });
 
-    if (tontine.ownerId !== req.user.id) return res.status(403).json({ error: 'Forbidden: only owner can record payouts' });
+    const member = tontine.members.id(memberId);
+    if (!member) return res.status(404).json({ error: 'Member not found' });
 
-    // verify member exists
-    const member = tontine.members.find(m => m.id === memberId);
-    if (!member) return res.status(404).json({ error: 'Member not found in this tontine' });
+    const pooledAmount = tontine.contributionAmount * tontine.members.length;
 
-    const pooledAmount = Number(tontine.contributionAmount) * Math.max(1, tontine.members.length);
-
-    const payout = {
-      id: createId(),
+    tontine.payouts.push({
       memberId,
       amount: pooledAmount,
-      date: new Date().toISOString(),
-      round: tontine.currentRound
-    };
-
-    tontine.payouts.push(payout);
-
-    // Move to next round
-    tontine.currentRound = (tontine.currentRound || 1) + 1;
-
-    await db.write();
-    res.status(201).json(payout);
-  } catch (err) {
-    next(err);
-  }
-}
-
-/**
- * Get a ledger summary for a tontine
- * returns per-member totals, current round totals, payouts history, next payout (simple rotation-based)
- */
-async function getLedger(req, res, next) {
-  try {
-    const { id } = req.params;
-    await db.read();
-    const tontine = db.data.tontines.find(t => t.id === id);
-    if (!tontine) return res.status(404).json({ error: 'Tontine not found' });
-
-    // compute per-member totals
-    const members = tontine.members.map(m => {
-      const totalContributed = tontine.contributions
-        .filter(c => c.memberId === m.id)
-        .reduce((sum, c) => sum + Number(c.amount), 0);
-
-      const contributedThisRound = tontine.contributions
-        .filter(c => c.memberId === m.id && c.round === tontine.currentRound)
-        .reduce((sum, c) => sum + Number(c.amount), 0);
-
-      return {
-        id: m.id,
-        name: m.name,
-        contact: m.contact || null,
-        totalContributed,
-        contributedThisRound
-      };
+      round: tontine.currentRound,
     });
+    tontine.currentRound += 1;
 
-    const totalCollectedThisRound = tontine.contributions
-      .filter(c => c.round === tontine.currentRound)
-      .reduce((sum, c) => sum + Number(c.amount), 0);
-
-    const totalPot = tontine.contributions.reduce((sum, c) => sum + Number(c.amount), 0);
-
-    // Simple next payout: pick according to rotation order and number of completed payouts
-    const completedRounds = tontine.payouts.length;
-    let nextPayoutMember = null;
-    if (tontine.members.length > 0) {
-      const idx = completedRounds % tontine.members.length;
-      nextPayoutMember = tontine.members[idx];
-    }
-
-    res.json({
-      id: tontine.id,
-      name: tontine.name,
-      contributionAmount: tontine.contributionAmount,
-      currentRound: tontine.currentRound,
-      members,
-      totalCollectedThisRound,
-      totalPot,
-      payouts: tontine.payouts,
-      nextPayoutMember
-    });
+    await tontine.save();
+    res.status(201).json(tontine.payouts[tontine.payouts.length - 1]);
   } catch (err) {
     next(err);
   }
@@ -250,5 +128,4 @@ module.exports = {
   addMember,
   recordContribution,
   recordPayout,
-  getLedger
 };
