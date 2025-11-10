@@ -1,37 +1,46 @@
-version: '3.8'
-
 services:
   backend:
-    build: .                   # backend Dockerfile at root
-    container_name: backend
+    build:
+      context: .
+      dockerfile: Dockerfile             #Define the Dockerfile for the backend service
+    container_name: tontine-backend
+    restart: always
     ports:
-      - "3000:3000"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/tontine
+      - "5001:5001"
+    env_file:
+      - ./backend/.env
     depends_on:
       - mongo
-    volumes:
-      - backend-data:/app/db.json
-    restart: unless-stopped
+    networks:
+      - tontine-network
 
   frontend:
-    build: ./frontend          # frontend Dockerfile in frontend/
-    container_name: frontend
+    build:
+      context: ./frontend               
+      dockerfile: Dockerfile            #Define the Dockerfile for the frontend service
+    container_name: tontine-frontend
+    restart: always
     ports:
-      - "5000:5000"
+      - "3000:3000"
     depends_on:
       - backend
-    restart: unless-stopped
+    networks:
+      - tontine-network
 
   mongo:
-    image: mongo:7.0
-    container_name: mongo
+    image: mongo:latest
+    container_name: tontine-mongo
+    restart: always
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db
-    restart: unless-stopped
+      - mongo_data:/data/db
+    networks:
+      - tontine-network
 
 volumes:
-  mongo-data:
-  backend-data:
+  mongo_data:
+
+networks:
+  tontine-network:
+    driver: bridge

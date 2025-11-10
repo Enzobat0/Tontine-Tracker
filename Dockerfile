@@ -26,7 +26,7 @@ COPY backend ./backend
 # ------------------------------
 # Create a non-root user for security
 # ------------------------------
-RUN useradd -m appuser && chown -R appuser /app
+RUN useradd -m appuser && chown -R appuser /app
 USER appuser
 
 # ------------------------------
