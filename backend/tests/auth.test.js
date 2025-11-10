@@ -6,13 +6,12 @@ const User = require('../src/models/Users.js');
 
 describe('Auth API (MongoDB)', () => {
   beforeAll(async () => {
-    // Connect to test database
     process.env.MONGO_URI = 'mongodb://localhost:27017/tontine_test';
     await connectDB();
   });
 
   beforeEach(async () => {
-    // Clear users before each test
+    
     await User.deleteMany({});
   });
 
@@ -35,7 +34,7 @@ describe('Auth API (MongoDB)', () => {
     expect(res.body).not.toHaveProperty('password');
 
     const userInDb = await User.findOne({ email: 'alice@example.com' });
-    expect(userInDb).toBeTruthy(); // ✅ confirms it’s saved
+    expect(userInDb).toBeTruthy();
   });
 
   it('should reject registration with missing fields', async () => {

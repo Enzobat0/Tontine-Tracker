@@ -30,6 +30,10 @@ export default defineConfig([
       "no-irregular-whitespace": "error",
     },
   },
+  {
+    files: ["**/tests/**/*.js"],
+    languageOptions: { globals: { ...globals.jest } }, 
+    },
 
 
   {
