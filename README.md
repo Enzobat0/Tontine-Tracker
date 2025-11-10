@@ -89,6 +89,28 @@ Start the backend server in development mode:
 ```
 npm run dev
 ```
+Docker Setup
+
+Build the backend Docker image:
+
+docker build -t tontine-backend ./backend
+
+
+Run the backend container:
+
+docker run -d -p 4000:4000 --name tontine-backend \
+  --env JWT_SECRET=<your_secret_key> \
+  --env JWT_EXPIRES_IN=1d \
+  tontine-backend
+
+
+If you want to use MongoDB via Docker, you can also run:
+
+docker run -d -p 27017:27017 --name tontine-mongo mongo:6.0
+
+
+Then set MONGO_URI=mongodb://host.docker.internal:27017/tontine_db in the backend environment.
+
 #### 3. Frontend Setup (HTML/CSS/JS)
 Navigate to the frontend folder:
 
@@ -100,6 +122,15 @@ Serve the frontend locally.Use Node serve:
 npx serve .
 ```
 Open your browser at the URL provided by your static server.
+
+Docker Setup
+
+You can also serve the frontend with Docker:
+
+docker run -d -p 3000:3000 -v $(pwd)/frontend:/usr/share/nginx/html:ro nginx
+
+
+Open http://localhost:3000 in your browser.
 
 #### 4. Notes & Tips
 
