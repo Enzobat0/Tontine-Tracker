@@ -16,6 +16,11 @@ jobs:
         image: mongo:6.0
         ports:
           - 27017:27017
+        options: >-
+          --health-cmd "mongo --eval 'db.adminCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
 
     steps:
@@ -36,19 +41,10 @@ jobs:
         run: npx eslint .  
         continue-on-error: false
 
-      - name: Wait for MongoDB
-        working-directory: ./backend
-        run: |
-          echo "Waiting for MongoDB..."
-          until mongo --host localhost --port 27017 --eval "db.adminCommand('ping')" &> /dev/null
-          do
-            sleep 2
-            echo "MongoDB not ready yet, waiting..."
-          done
-          echo "MongoDB is ready!"
-          
       - name: Run tests
         working-directory: ./backend
+        env:
+          MONGO_URI: mongodb://localhost:27017/tontine_test
         run: npm test
 
       - name: Build Docker image
