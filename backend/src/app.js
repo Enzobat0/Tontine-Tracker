@@ -17,7 +17,7 @@ app.get('/', (req, res) => res.json({ status: 'ok', app: 'TontineTracker Backend
 // API routers
 app.use('/api/users', usersRouter);
 app.use('/api/tontines', tontinesRouter);
-app.use('/api/auth', authRouter);
+app.use('/api/auth', authRouter);
 
 // simple error handler
 app.use((err, req, res, next) => {
