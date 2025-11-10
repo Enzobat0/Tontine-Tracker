@@ -1,14 +1,17 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+let mongoServer;
 const app = require('../src/app');
 const { connectDB, disconnectDB } = require('../src/config/db');
 const User = require('../src/models/Users.js'); 
 
 describe('Auth API (MongoDB)', () => {
   beforeAll(async () => {
-    process.env.MONGO_URI = 'mongodb://localhost:27017/tontine_test';
+    mongoServer = await MongoMemoryServer.create();
+    process.env.MONGO_URI = mongoServer.getUri();
     await connectDB();
-  });
+});
+
 
   beforeEach(async () => {
     
@@ -17,7 +20,8 @@ describe('Auth API (MongoDB)', () => {
 
   afterAll(async () => {
     await disconnectDB();
-  });
+    await mongoServer.stop();
+});
 
   it('should register a new user successfully', async () => {
     const res = await request(app)
