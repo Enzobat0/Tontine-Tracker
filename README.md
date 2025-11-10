@@ -122,4 +122,3 @@ Troubleshooting:
 | Enzo Batungwanayo | Team Lead &Backend Developer |
 |  Patrick Nayituriki| Frontend Developer |
 | Marvelous Nelson | DevOps& FullStack Developer |
-
