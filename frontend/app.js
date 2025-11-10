@@ -190,7 +190,7 @@ document.getElementById('addMemberForm').addEventListener('submit', async (e) =>
   const name = document.getElementById('memberName').value;
   const contact = document.getElementById('memberContact').value;
   try {
-    const res = await fetch(API_BASE + /api/tontines/${tontineId}/members, {
+    const res = await fetch(`API_BASE + /api/tontines/${tontineId}/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeader() },
       body: JSON.stringify({ name, contact })
@@ -211,7 +211,7 @@ document.getElementById('contributionForm').addEventListener('submit', async (e)
   const body = { memberId };
   if (amountVal) body.amount = Number(amountVal);
   try {
-    const res = await fetch(API_BASE + /api/tontines/${currentTontine.id}/contributions, {
+    const res = await fetch(`API_BASE + /api/tontines/${currentTontine.id}/contributions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeader() },
       body: JSON.stringify(body)
@@ -229,7 +229,7 @@ document.getElementById('payoutForm').addEventListener('submit', async (e) => {
   if (!currentTontine) return alert('Select a tontine first');
   const memberId = selectMemberForPayout.value;
   try {
-    const res = await fetch(API_BASE + /api/tontines/${currentTontine.id}/payouts, {
+    const res = await fetch(`API_BASE + /api/tontines/${currentTontine.id}/payouts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...authHeader() },
       body: JSON.stringify({ memberId })
