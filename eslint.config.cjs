@@ -1,14 +1,12 @@
-// eslint.config.mjs
+const js = require("@eslint/js");
+const globals = require("globals");
+const { defineConfig } = require("eslint/config");
 
-import js from "@eslint/js";
-import globals from "globals";
-import { defineConfig } from "eslint/config";
-
-export default defineConfig([
+module.exports = defineConfig([
   {
     files: ["frontend/**/*.{js,mjs,cjs}"],
     languageOptions: {
-      globals: globals.browser, 
+      globals: globals.browser,
       sourceType: "module",
     },
     rules: {
@@ -17,11 +15,10 @@ export default defineConfig([
       "no-irregular-whitespace": "error",
     },
   },
-
   {
     files: ["backend/**/*.{js,mjs,cjs}", "server.js"],
     languageOptions: {
-      globals: globals.node, 
+      globals: globals.node,
       sourceType: "commonjs",
     },
     rules: {
@@ -32,10 +29,8 @@ export default defineConfig([
   },
   {
     files: ["**/tests/**/*.js"],
-    languageOptions: { globals: { ...globals.jest } }, 
-    },
-
-
+    languageOptions: { globals: { ...globals.jest } },
+  },
   {
     ignores: ["node_modules/", "dist/", "coverage/", "**/*.min.js"],
   },
