@@ -49,14 +49,17 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t my-app-image .
-        -name: Run Tfsec (IaC Scanner)
+        
+      - name: Run Tfsec (IaC Scanner)
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
           working_directory: terraform
           soft_fail: false
-          -name: Build Docker image for scanning
+
+      - name: Build Docker image for scanning
         run: docker build -t tontine-app:${{ github.sha }} .
-        -name: Run Trivy vulnerability scanner
+
+      - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'tontine-app:${{ github.sha }}'
