@@ -1,2 +1,5 @@
+[bastion]
+20.166.23.234 ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
 [webserver]
-98.71.94.67 ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+10.0.2.4 ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand="ssh -W %h:%p -q azureuser@20.166.23.234 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no"'
