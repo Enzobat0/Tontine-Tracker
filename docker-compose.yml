@@ -6,7 +6,7 @@ services:
     container_name: tontine-backend
     restart: always
     ports:
-      - "5001:5001"
+      - "4000:4000"
     env_file:
       - ./backend/.env
     depends_on:
