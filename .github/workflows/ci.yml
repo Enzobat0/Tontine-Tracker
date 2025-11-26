@@ -52,13 +52,7 @@ jobs:
         with:
           working_directory: terraform
           soft_fail: false
-
-      - name: Cleanup Caches and Builder
-        run: |
-          docker builder prune -f
-          docker image prune -a -f
-          npm cache clean --force    
-
+          
       - name: Build Docker image for scanning
         run: docker build --no-cache -t tontine-app:${{ github.sha }} .
       

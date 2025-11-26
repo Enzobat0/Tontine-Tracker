@@ -13,13 +13,14 @@ RUN mkdir -p backend
 # ------------------------------
 # Copy only package files to leverage caching
 # ------------------------------
-COPY backend/package*.json ./backend/
+COPY backend/package.json ./backend/
 
 # ------------------------------
 # Install dependencies
 # ------------------------------
 WORKDIR /app/backend
-RUN npm ci --only=production
+RUN npm install --omit=dev
+
 WORKDIR /app
 
 # ------------------------------
