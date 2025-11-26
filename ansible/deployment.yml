@@ -1,0 +1,65 @@
+name: CD - Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows you to run this manually from Actions tab for testing
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # --- PART 1: BUILD & PUSH ---
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/tontine-app:${{ github.sha }}
+            ${{ secrets.ACR_LOGIN_SERVER }}/tontine-app:latest
+
+      # --- PART 2: DEPLOY VIA ANSIBLE ---
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+
+      - name: Install Ansible Docker Collection
+        run: ansible-galaxy collection install community.docker
+
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh/
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Run Ansible Playbook
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False" # Don't ask for 'yes/no' fingerprint
+        run: |
+          ansible-playbook -i ansible/inventory.ini ansible/deploy.yml \
+            --extra-vars "acr_login_server=${{ secrets.ACR_LOGIN_SERVER }}" \
+            --extra-vars "acr_username=${{ secrets.ACR_USERNAME }}" \
+            --extra-vars "acr_password=${{ secrets.ACR_PASSWORD }}" \
+            --extra-vars "image_tag=${{ github.sha }}" \
+            --extra-vars "mongo_uri=${{ secrets.MONGO_URI }}" \
+            --extra-vars "jwt_secret=${{ secrets.JWT_SECRET }}"
