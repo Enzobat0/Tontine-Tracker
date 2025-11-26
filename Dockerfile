@@ -19,7 +19,7 @@ COPY backend/package.json ./backend/
 # ------------------------------
 RUN npm install --omit=dev
 
-
+WORKDIR /app
 # ------------------------------
 # Copy the backend source code into the container
 # ------------------------------
