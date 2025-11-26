@@ -7,7 +7,6 @@ FROM node:20-slim
 # Set working directory inside the container
 # ------------------------------
 WORKDIR /app
-RUN mkdir -p backend
 
 
 # ------------------------------
@@ -18,10 +17,8 @@ COPY backend/package.json ./backend/
 # ------------------------------
 # Install dependencies
 # ------------------------------
-WORKDIR /app/backend
 RUN npm install --omit=dev
 
-WORKDIR /app
 
 # ------------------------------
 # Copy the backend source code into the container
