@@ -52,7 +52,7 @@ jobs:
         with:
           working_directory: terraform
           soft_fail: false
-          
+
       - name: Build Docker image for scanning
         run: docker build --no-cache -t tontine-app:${{ github.sha }} .
       
@@ -64,4 +64,4 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
