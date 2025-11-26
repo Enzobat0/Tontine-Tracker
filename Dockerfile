@@ -6,18 +6,20 @@ FROM node:20-slim
 # ------------------------------
 # Set working directory inside the container
 # ------------------------------
-WORKDIR /app
+WORKDIR /app/backend
+
 
 # ------------------------------
 # Copy only package files to leverage caching
 # ------------------------------
-COPY backend/package*.json ./
+COPY backend/package.json ./
 
 # ------------------------------
 # Install dependencies
 # ------------------------------
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
+WORKDIR /app
 # ------------------------------
 # Copy the backend source code into the container
 # ------------------------------

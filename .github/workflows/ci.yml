@@ -30,7 +30,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 24.4.1   
+          node-version: 24.4.1
 
       - name: Install dependencies
         working-directory: ./backend
@@ -47,5 +47,21 @@ jobs:
           MONGO_URI: mongodb://localhost:27017/tontine_test
         run: npm test
 
-      - name: Build Docker image
-        run: docker build -t my-app-image .
+      - name: Run Tfsec (IaC Scanner)
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: terraform
+          soft_fail: false
+
+      - name: Build Docker image for scanning
+        run: docker build --no-cache -t tontine-app:${{ github.sha }} .
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'tontine-app:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL'
