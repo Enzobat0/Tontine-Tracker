@@ -21,7 +21,9 @@
     "jsonwebtoken": "^9.0.2",
     "lowdb": "^7.0.1",
     "mongoose": "^8.19.3",
-    "nanoid": "^5.1.6"
+    "nanoid": "^5.1.6",
+    "cross-spawn": "^7.0.6",
+    "glob": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -30,9 +32,5 @@
     "nodemon": "^3.1.10",
     "jest": "^30.2.0",
     "supertest": "^7.1.4"
-  },
-  "overrides": {
-    "cross-spawn": "7.0.6",
-    "glob": "10.5.0"
   }
 }
