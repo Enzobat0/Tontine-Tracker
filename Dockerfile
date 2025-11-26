@@ -7,6 +7,8 @@ FROM node:20-slim
 # Set working directory inside the container
 # ------------------------------
 WORKDIR /app
+RUN mkdir -p backend
+
 
 # ------------------------------
 # Copy only package files to leverage caching
