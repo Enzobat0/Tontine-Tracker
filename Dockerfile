@@ -18,7 +18,9 @@ COPY backend/package*.json ./backend/
 # ------------------------------
 # Install dependencies
 # ------------------------------
-RUN npm ci --prefix ./backend --only=production
+WORKDIR /app/backend
+RUN npm ci --only=production
+WORKDIR /app
 
 # ------------------------------
 # Copy the backend source code into the container
