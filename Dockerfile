@@ -11,12 +11,12 @@ WORKDIR /app
 # ------------------------------
 # Copy only package files to leverage caching
 # ------------------------------
-COPY backend/package*.json ./
+COPY backend/package*.json ./backend/
 
 # ------------------------------
 # Install dependencies
 # ------------------------------
-RUN npm ci --only=production
+RUN npm ci --prefix ./backend --only=production
 
 # ------------------------------
 # Copy the backend source code into the container
@@ -32,7 +32,7 @@ USER appuser
 # ------------------------------
 # Expose the app port
 # ------------------------------
-EXPOSE 3000
+EXPOSE 4000
 
 # ------------------------------
 # Start the application
