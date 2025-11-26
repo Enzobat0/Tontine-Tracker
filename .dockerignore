@@ -26,3 +26,5 @@ Dockerfile
 docker-compose.yml
 
 frontend/
+package.json
+package-lock.json
