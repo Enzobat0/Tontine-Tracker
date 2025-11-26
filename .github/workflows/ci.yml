@@ -47,9 +47,6 @@ jobs:
           MONGO_URI: mongodb://localhost:27017/tontine_test
         run: npm test
 
-      - name: Build Docker image
-        run: docker build --no-cache -t tontine-app:${{ github.sha }} .
-
       - name: Run Tfsec (IaC Scanner)
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
@@ -57,7 +54,7 @@ jobs:
           soft_fail: false
 
       - name: Build Docker image for scanning
-        run: docker build -t tontine-app:${{ github.sha }} .
+        run: docker build --no-cache -t tontine-app:${{ github.sha }} .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
