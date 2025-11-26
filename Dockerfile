@@ -12,7 +12,7 @@ WORKDIR /app/backend
 # ------------------------------
 # Copy only package files to leverage caching
 # ------------------------------
-COPY backend/package.json ./backend/
+COPY backend/package.json ./
 
 # ------------------------------
 # Install dependencies
