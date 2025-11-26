@@ -32,7 +32,7 @@
     "nodemon": "^3.1.10"
   },
   "overrides": {
-    "cross-spawn": "^7.0.6",
-    "glob": "^10.4.5"
+    "cross-spawn": ">=7.0.6",
+    "glob": ">=10.5.0"
   }
 }
