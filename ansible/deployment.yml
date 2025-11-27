@@ -1,0 +1,45 @@
+- name: Deploy Tontine App to Production
+  hosts: webserver
+  become: true
+  vars:
+    acr_login_server: "{{ acr_login_server }}"
+    acr_username: "{{ acr_username }}"
+    acr_password: "{{ acr_password }}"
+    image_tag: "{{ image_tag }}"
+    mongo_uri: "{{ mongo_uri }}"
+    jwt_secret: "{{ jwt_secret }}"
+    container_name: "tontine-backend"
+
+  tasks:
+    - name: Log into Azure Container Registry
+      community.docker.docker_login:
+        registry_url: "{{ acr_login_server }}"
+        username: "{{ acr_username }}"
+        password: "{{ acr_password }}"
+        reauthorize: yes
+
+    - name: Pull the new Docker Image
+      community.docker.docker_image:
+        name: "{{ acr_login_server }}/tontine-app"
+        tag: "{{ image_tag }}"
+        source: pull
+        force_source: yes
+
+    - name: Stop and Remove Existing Container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent
+
+    - name: Run New Container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ acr_login_server }}/tontine-app:{{ image_tag }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "4000:4000"
+        env:
+          PORT: "4000"
+          MONGO_URI: "{{ mongo_uri }}"
+          JWT_SECRET: "{{ jwt_secret }}"
+          NODE_ENV: "production"
