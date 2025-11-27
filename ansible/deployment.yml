@@ -8,7 +8,8 @@
     image_tag: "{{ image_tag }}"
     mongo_uri: "{{ mongo_uri }}"
     jwt_secret: "{{ jwt_secret }}"
-    container_name: "tontine-backend"
+    backend_image: "{{ acr_login_server }}/tontine-backend:{{ image_tag }}"
+    frontend_image: "{{ acr_login_server }}/tontine-frontend:{{ image_tag }}"  
 
   tasks:
     - name: Log into Azure Container Registry
@@ -18,9 +19,9 @@
         password: "{{ acr_password }}"
         reauthorize: yes
 
-    - name: Pull the new Docker Image
+    - name: Pull the backend Image
       community.docker.docker_image:
-        name: "{{ acr_login_server }}/tontine-app"
+        name: "{{ acr_login_server }}/tontine-backend"
         tag: "{{ image_tag }}"
         source: pull
         force_source: yes
@@ -30,10 +31,10 @@
         name: "{{ container_name }}"
         state: absent
 
-    - name: Run New Container
+    - name: Run backend Container
       community.docker.docker_container:
-        name: "{{ container_name }}"
-        image: "{{ acr_login_server }}/tontine-app:{{ image_tag }}"
+        name: "tontine-backend"
+        image: "{{ backend_image }}"
         state: started
         restart_policy: always
         ports:
@@ -43,3 +44,20 @@
           MONGO_URI: "{{ mongo_uri }}"
           JWT_SECRET: "{{ jwt_secret }}"
           NODE_ENV: "production"
+
+    - name: Pull Frontend Image
+      community.docker.docker_image:
+        name: "{{ acr_login_server }}/tontine-frontend"
+        tag: "{{ image_tag }}"
+        source: pull
+        force_source: yes
+
+    - name: Run Frontend Container
+      community.docker.docker_container:
+        name: "tontine-frontend"
+        image: "{{ frontend_image }}"
+        state: started
+        restart_policy: always
+        recreate: yes
+        ports:
+          - "3000:80"

@@ -25,14 +25,27 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Build and Push Docker Image
+      - name: Build and Push Backend
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: .             
+          file: Dockerfile      
           push: true
+          no-cache: true         
           tags: |
-            ${{ secrets.ACR_LOGIN_SERVER }}/tontine-app:${{ github.sha }}
-            ${{ secrets.ACR_LOGIN_SERVER }}/tontine-app:latest
+            ${{ secrets.ACR_LOGIN_SERVER }}/tontine-backend:${{ github.sha }}
+            ${{ secrets.ACR_LOGIN_SERVER }}/tontine-backend:latest
+
+      - name: Build and Push Frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          no-cache: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/tontine-frontend:${{ github.sha }}
+            ${{ secrets.ACR_LOGIN_SERVER }}/tontine-frontend:latest     
 
       - name: Install Ansible
         run: |
