@@ -39,4 +39,4 @@ EXPOSE 4000
 # ------------------------------
 # Start the application
 # ------------------------------
-CMD ["node", "backend/src/app.js"]
+CMD ["node", "backend/server.js"]
