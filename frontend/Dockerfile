@@ -1,11 +1,11 @@
-FROM node:20-slim
+FROM nginx:alpine
 
-WORKDIR /app
+RUN rm /etc/nginx/conf.d/default.conf
 
-RUN npm install -g serve
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-COPY . .
+COPY . /usr/share/nginx/html
 
-EXPOSE 5001
+EXPOSE 80
 
-CMD ["serve", "-s", ".", "-l", "5001"]
+CMD ["nginx", "-g", "daemon off;"]
