@@ -26,9 +26,9 @@
         source: pull
         force_source: yes
 
-    - name: Stop and Remove Existing Container
+    - name: Stop and Remove Existing Backend Container
       community.docker.docker_container:
-        name: "{{ container_name }}"
+        name: "tontine-backend"
         state: absent
 
     - name: Run backend Container
@@ -51,6 +51,11 @@
         tag: "{{ image_tag }}"
         source: pull
         force_source: yes
+    
+    - name: Stop and Remove Existing Backend Container
+      community.docker.docker_container:
+        name: "tontine-frontend"
+        state: absent
 
     - name: Run Frontend Container
       community.docker.docker_container:
