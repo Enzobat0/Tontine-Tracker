@@ -1,65 +1,45 @@
-name: CD - Deploy to Production
+- name: Deploy Tontine App to Production
+  hosts: webserver
+  become: true
+  vars:
+    acr_login_server: "{{ acr_login_server }}"
+    acr_username: "{{ acr_username }}"
+    acr_password: "{{ acr_password }}"
+    image_tag: "{{ image_tag }}"
+    mongo_uri: "{{ mongo_uri }}"
+    jwt_secret: "{{ jwt_secret }}"
+    container_name: "tontine-backend"
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch: # Allows you to run this manually from Actions tab for testing
+  tasks:
+    - name: Log into Azure Container Registry
+      community.docker.docker_login:
+        registry_url: "{{ acr_login_server }}"
+        username: "{{ acr_username }}"
+        password: "{{ acr_password }}"
+        reauthorize: yes
 
-permissions:
-  contents: read
-  id-token: write
+    - name: Pull the new Docker Image
+      community.docker.docker_image:
+        name: "{{ acr_login_server }}/tontine-app"
+        tag: "{{ image_tag }}"
+        source: pull
+        force_source: yes
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Stop and Remove Existing Container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent
 
-      # --- PART 1: BUILD & PUSH ---
-
-      - name: Log in to Azure Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ secrets.ACR_LOGIN_SERVER }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ secrets.ACR_LOGIN_SERVER }}/tontine-app:${{ github.sha }}
-            ${{ secrets.ACR_LOGIN_SERVER }}/tontine-app:latest
-
-      # --- PART 2: DEPLOY VIA ANSIBLE ---
-
-      - name: Install Ansible
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible
-
-      - name: Install Ansible Docker Collection
-        run: ansible-galaxy collection install community.docker
-
-      - name: Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh/
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-      - name: Run Ansible Playbook
+    - name: Run New Container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ acr_login_server }}/tontine-app:{{ image_tag }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "4000:4000"
         env:
-          ANSIBLE_HOST_KEY_CHECKING: "False" # Don't ask for 'yes/no' fingerprint
-        run: |
-          ansible-playbook -i ansible/inventory.ini ansible/deploy.yml \
-            --extra-vars "acr_login_server=${{ secrets.ACR_LOGIN_SERVER }}" \
-            --extra-vars "acr_username=${{ secrets.ACR_USERNAME }}" \
-            --extra-vars "acr_password=${{ secrets.ACR_PASSWORD }}" \
-            --extra-vars "image_tag=${{ github.sha }}" \
-            --extra-vars "mongo_uri=${{ secrets.MONGO_URI }}" \
-            --extra-vars "jwt_secret=${{ secrets.JWT_SECRET }}"
+          PORT: "4000"
+          MONGO_URI: "{{ mongo_uri }}"
+          JWT_SECRET: "{{ jwt_secret }}"
+          NODE_ENV: "production"
