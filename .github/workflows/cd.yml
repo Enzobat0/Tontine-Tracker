@@ -52,7 +52,7 @@ jobs:
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
         run: |
-          ansible-playbook -i ansible/inventory.ini ansible/deploy.yml \
+          ansible-playbook -i ansible/inventory ansible/deployment.yml \
             --extra-vars "acr_login_server=${{ secrets.ACR_LOGIN_SERVER }}" \
             --extra-vars "acr_username=${{ secrets.ACR_USERNAME }}" \
             --extra-vars "acr_password=${{ secrets.ACR_PASSWORD }}" \
