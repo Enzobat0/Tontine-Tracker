@@ -1,4 +1,6 @@
 # Tontine Tracker — Digital Group Savings Platform
+## Live Application URL: <http://20.166.23.234/>
+## Demo Video: <https://youtu.be/kP1WezTN1ZA>
 **Description**
 
 Tontine Tracker is a lightweight web application designed to help small community savings groups (commonly known as tontines, ibimina, or stokvels in various African contexts) manage their collective funds digitally.
@@ -19,6 +21,45 @@ Despite their importance, most tontines still depend on paper records or verbal 
 
 Tontine Tracker directly addresses this challenge by digitizing group saving management while remaining simple enough for community use.
 It focuses on accessibility, transparency, and accountability; crucial values for trust-driven savings groups.
+
+### Cloud Architecture & Operations
+ This project is deployed using a secure, enterprise-grade Hub-and-Spoke network topology on Microsoft Azure.
+ 
+ **Architecture Diagram**
+ 
+![Architecture Diagram](/Architecture.png)
+
+ **Infrastructure Components**
+- Bastion Host (Public Subnet): Acts as the secure gateway. It runs Nginx as a Reverse Proxy to route traffic to the private application (Port 80 to Internal Ports 3000/4000).
+
+- Application VM (Private Subnet): Hosts the Dockerized Application (Frontend + Backend). It has no public IP, ensuring maximum security from direct attacks.
+
+- Azure Cosmos DB: Managed MongoDB service for persistent data storage.
+
+- Azure Container Registry (ACR): Private, secure storage for our Docker container images.
+
+### CI/CD Pipeline (DevOps)
+We implemented a full GitOps workflow using GitHub Actions, Terraform, and Ansible.
+#### 1. Continuous Integration (CI)
+Triggers on every Pull Request to the main branch.
+
+- Linting: Checks code quality with ESLint.
+
+- Testing: Runs unit tests (Jest) to ensure logic is sound.
+
+- Security (DevSecOps):
+
+  - Tfsec: Scans Terraform code for infrastructure vulnerabilities.
+
+  - Trivy: Scans Docker images for critical CVEs before building.
+#### 2. Continuous Deployment (CD)
+Triggers automatically when code is merged to the main branch.
+
+- Build: Creates production-optimized Docker images for Frontend (Nginx) and Backend (Node.js).
+
+- Push: Uploads images to the private Azure Container Registry (ACR).
+
+- Deploy: Uses Ansible to connect to the private VM (via the Bastion jump host), pull the new images, and restart the containers with zero downtime.
 
 **Key Objectives**
 
@@ -53,98 +94,40 @@ It focuses on accessibility, transparency, and accountability; crucial values fo
 | Layer | Technology |
 |--------|-------------|
 | **Backend** | Node.js + Express |
-| **Database** | MongoDB or SQLite (depending on deployment environment) |
+| **Database** | Azure Cosmos DB (MongoDB API) |
 | **Frontend** | HTML, CSS, JavaScript |
 | **Styling** | Bootstrap (for responsiveness and design consistency) |
-| **Version Control** | Git & GitHub |
-| **DevOps Tools (later phases)** | Docker, GitHub Actions (CI/CD), Deployment via Render/Netlify |
+| **Infrastructure** | Terraform (IaC)|
+| **Configuration** |	Ansible|
+| **CI/CD** |	GitHub Actions|
 
-## Setup Instructions
+## Setup Instructions (Local Development)
 
 #### 1. Clone the Repository
 ```
-git clone https://github.com/<your-username>/<repo-name>.git
-cd <repo-name>
+git clone https://github.com/<your-username>/<Tontine-Tracker>.git
+cd <Tontine-Tracker>
 ```
-
-#### 2. Backend Setup (Node.js + Express)
-Navigate to the backend folder:
-```
-cd backend
-```
-Install dependencies:
-```
-npm install
-```
+#### 2. Environment Setup
 Create a .env file:
 Required variables in .env:
 ```
 PORT=4000
+MONGO_URI=mongodb://localhost:27017/tontine_local
 JWT_SECRET=<your_secret_key>
 JWT_EXPIRES_IN=1d
 ```
 Make sure to replace <your_secret_key> with a secure random string
 
-Start the backend server in development mode:
+#### 3. Run with Docker Compose
+This will start the Database, Backend, and Frontend automatically.
 ```
-npm run dev
+docker-compose up --build
 ```
-Docker Setup
+#### 4. Access the App
+Frontend: http://localhost:3000
 
-Build the backend Docker image:
-
-docker build -t tontine-backend ./backend
-
-
-Run the backend container:
-
-docker run -d -p 4000:4000 --name tontine-backend \
-  --env JWT_SECRET=<your_secret_key> \
-  --env JWT_EXPIRES_IN=1d \
-  tontine-backend
-
-
-If you want to use MongoDB via Docker, you can also run:
-
-docker run -d -p 27017:27017 --name tontine-mongo mongo:6.0
-
-
-Then set MONGO_URI=mongodb://host.docker.internal:27017/tontine_db in the backend environment.
-
-#### 3. Frontend Setup (HTML/CSS/JS)
-Navigate to the frontend folder:
-
-```
-cd ../frontend
-```
-Serve the frontend locally.Use Node serve:
-```
-npx serve .
-```
-Open your browser at the URL provided by your static server.
-
-Docker Setup
-
-You can also serve the frontend with Docker:
-
-docker run -d -p 3000:3000 -v $(pwd)/frontend:/usr/share/nginx/html:ro nginx
-
-
-Open http://localhost:3000 in your browser.
-
-#### 4. Notes & Tips
-
-Database: Uses local JSON file (db.json) for now, no external DB setup required.
-
-CORS: Backend already configured for frontend requests.
-
-Troubleshooting:
-
-- If server doesn’t start → check .env variables.
-
-- If JWT issues occur → clear browser localStorage.
-
-- If frontend doesn’t load → confirm correct port for static server.
+Backend API: http://localhost:4000
 
 
 ##  Team Members
